@@ -16,7 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,8 +27,10 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -65,6 +69,7 @@ fun NotesListScreen(
     onNavigateToEditNote: (Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
     var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
     var noteToDelete: Note? by remember { mutableStateOf(null) }
 
@@ -99,31 +104,57 @@ fun NotesListScreen(
             }
         }
     ) { paddingValues ->
-        Box(
+        Column( // Changed from Box to Column to stack SearchBar and List/States
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when (val state = uiState) {
-                is NotesListUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                is NotesListUiState.Success -> {
-                    if (state.notes.isEmpty()) {
-                        EmptyState()
-                    } else {
-                        NotesLazyList(
-                            notes = state.notes,
-                            onNoteClick = { noteId -> onNavigateToEditNote(noteId) },
-                            onDeleteRequest = { note ->
-                                noteToDelete = note
-                                showDeleteConfirmationDialog = true
-                            }
-                        )
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChange(it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                label = { Text("Search notes") },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search Icon") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                            Icon(Icons.Filled.Clear, contentDescription = "Clear search")
+                        }
                     }
-                }
-                is NotesListUiState.Error -> {
-                    ErrorState(message = state.message, onRetry = { viewModel.fetchNotes() })
+                },
+                singleLine = true,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
+                colors = TextFieldDefaults.outlinedTextFieldColors()
+            )
+
+            Box(modifier = Modifier.weight(1f)) { // Box to allow aligning Empty/Error states in center
+                when (val state = uiState) {
+                    is NotesListUiState.Loading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    is NotesListUiState.Success -> {
+                        if (state.notes.isEmpty()) {
+                            if (searchQuery.isBlank()) {
+                                EmptyState()
+                            } else {
+                                NoSearchResultsState(query = searchQuery)
+                            }
+                        } else {
+                            NotesLazyList(
+                                notes = state.notes,
+                                onNoteClick = { noteId -> onNavigateToEditNote(noteId) },
+                                onDeleteRequest = { note ->
+                                    noteToDelete = note
+                                    showDeleteConfirmationDialog = true
+                                }
+                            )
+                        }
+                    }
+                    is NotesListUiState.Error -> {
+                        ErrorState(message = state.message, onRetry = { viewModel.onSearchQueryChange(searchQuery) }) // Re-trigger current search/fetch
+                    }
                 }
             }
         }
@@ -134,19 +165,19 @@ fun NotesListScreen(
 fun NotesLazyList(
     notes: List<Note>,
     onNoteClick: (Int) -> Unit,
-    onDeleteRequest: (Note) -> Unit, // Changed parameter name
+    onDeleteRequest: (Note) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp), // Keep top padding for search bar
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(notes, key = { note -> note.id }) { note ->
             NoteItem(
                 note = note,
                 onClick = { onNoteClick(note.id) },
-                onDeleteRequest = { onDeleteRequest(note) } // Changed parameter name
+                onDeleteRequest = { onDeleteRequest(note) }
             )
         }
     }
