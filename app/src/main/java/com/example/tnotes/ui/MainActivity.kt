@@ -64,15 +64,10 @@ fun TNotesAppNavigation() {
             arguments = listOf(navArgument(NavRoutes.NOTE_ID_ARG) {
                 type = NavType.IntType
             })
-        ) { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getInt(NavRoutes.NOTE_ID_ARG)
+        ) {
+            // noteId is now handled by AddEditNoteViewModel via SavedStateHandle
             AddEditNoteScreen(
-                noteId = if (noteId == -1) null else noteId, // Handle new note case
-                onNavigateBack = { navController.popBackStack() },
-                onSaveNote = {
-                    // Logic to save note (likely via ViewModel)
-                    navController.popBackStack() // Navigate back after save
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }
