@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- TODO: Define what to backup -->
+        <include domain="sharedpref" />
+        <include domain="database" />
+    </cloud-backup>
+    <device-transfer>
+        <!-- TODO: Define what to transfer -->
+        <include domain="sharedpref" />
+        <include domain="database" />
+    </device-transfer>
+</data-extraction-rules>

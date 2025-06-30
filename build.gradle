@@ -1,0 +1,24 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    id 'com.android.application' version '8.2.0' apply false // Using a recent stable version
+    id 'org.jetbrains.kotlin.android' version '1.9.21' apply false // Corresponds to recent Android Studio versions
+    id 'com.google.dagger.hilt.android' version '2.50' apply false // Hilt version
+    id 'com.google.devtools.ksp' version '1.9.21-1.0.15' apply false // KSP for Room/Hilt
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext {
+    // Versions for dependencies
+    activityVersion = '1.8.2'
+    composeVersion = '1.6.0' // Bill of Materials version
+    composeCompilerVersion = '1.5.7' // Aligns with Kotlin 1.9.21
+    coreKtxVersion = '1.12.0'
+    lifecycleVersion = '2.7.0'
+    roomVersion = '2.6.1'
+    coroutinesVersion = '1.7.3'
+    hiltNavigationComposeVersion = '1.1.0'
+    // Add other versions as needed
+}

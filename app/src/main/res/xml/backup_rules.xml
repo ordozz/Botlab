@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- TODO: Define what to backup.
+         By default, all files in the internal storage are backed up.
+         You can use <exclude> to prevent specific files or directories from being backed up.
+         <include> can be used to explicitly include files or directories.
+    -->
+    <!-- Example: <exclude domain="database" path="my_sensitive_data.db"/> -->
+</full-backup-content>
